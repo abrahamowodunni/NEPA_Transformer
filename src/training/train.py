@@ -4,7 +4,7 @@ from torch.utils.tensorboard import SummaryWriter
 from pathlib import Path
 from src.training.utils import get_ds, run_validation
 from src.model.transformer import build_tranformer
-from src.config.config import get_config, get_weights_file_path
+from src.config.config import get_weights_file_path
 from tqdm import tqdm
 import json
 

@@ -26,7 +26,7 @@ def get_requirements(file_path: str) -> List[str]:
 
 setup(
     name='NEPA_Transformer',
-    version='0.0.0.0',
+    version='0.0.0.1',
     author='Abraham Owodunni',
     author_email='abrahamowodunni@gmail.com',
     packages=find_packages(),
