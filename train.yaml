@@ -11,4 +11,4 @@ experiment_name: "runs/tmodel"  # For tensorboard logs
 tokenizer_src_path: "artifacts/tokenizer_src.json"  # Path for source tokenizer
 tokenizer_tgt_path: "artifacts/tokenizer_tgt.json"  # Path for target tokenizer
 
-validation_interval: 500  
+validation_interval: 200  
