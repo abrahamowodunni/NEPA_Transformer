@@ -150,3 +150,34 @@ class ResidualConnection(nn.Module): # the skip connection!
 
     def forward(self, x, sublayer):
         return x + self.dropout(sublayer(self.norm(x)))
+    
+class ProjectionLayer(nn.Module):
+    """
+    A projection layer that maps the hidden states (of dimension d_model) from the transformer decoder 
+    to the vocabulary size, providing a probability distribution over the vocabulary for each position 
+    in the sequence.
+
+    Args:
+        d_model (int): Dimensionality of the model's internal hidden states.
+        vocab_size (int): Size of the output vocabulary.
+
+    Methods:
+        forward(x):
+            Takes the hidden state output from the decoder (shape: batch, seq_len, d_model) 
+            and projects it to the vocabulary size (batch, seq_len, vocab_size) using a linear transformation, 
+            followed by log_softmax to get the probabilities for each token.
+
+    Input:
+        x (Tensor): The hidden state tensor with shape (batch, seq_len, d_model).
+
+    Output:
+        Tensor: Log-probabilities of tokens for each position in the sequence with shape 
+        (batch, seq_len, vocab_size).
+    """
+    def __init__(self, d_model, vocab_size):
+        super().__init__()
+        self.proj = nn.Linear(d_model, vocab_size)
+    
+    def forward(self, x):
+        # (batch, seq_len, d_model) --> (batch, seq_len, vocab_size)
+        return torch.log_softmax(self.proj(x), dim = -1)
