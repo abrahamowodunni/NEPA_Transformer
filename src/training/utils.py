@@ -2,7 +2,7 @@ import pandas as pd
 import torch
 import torchmetrics
 from torch.utils.data import random_split, DataLoader
-from dataset import BillingualDataSet, causal_mask
+from src.dataset.bilingual_dataset import BillingualDataSet, causal_mask
 from tokenizers import Tokenizer
 from tokenizers.models import WordLevel
 from tokenizers.trainers import WordLevelTrainer

@@ -1,0 +1,12 @@
+# train.yaml
+batch_size: 8
+num_epochs: 20
+lr: 0.0001  # Learning rate
+data_path: "Train.csv"  # Path to your local CSV file
+model_folder: "artifacts/weights"  # Store weights under the artifacts directory
+preload: null
+experiment_name: "runs/tmodel"  # For tensorboard logs
+
+# Paths for other artifacts
+tokenizer_src_path: "artifacts/tokenizer_src.json"  # Path for source tokenizer
+tokenizer_tgt_path: "artifacts/tokenizer_tgt.json"  # Path for target tokenizer

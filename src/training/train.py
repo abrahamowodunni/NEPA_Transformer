@@ -4,21 +4,34 @@ from torch.utils.tensorboard import SummaryWriter
 from pathlib import Path
 from src.training.utils import get_ds, get_model, run_validation
 from src.model.transformer import build_tranformer
-from config import get_config, get_weights_file_path
+from src.config.config import get_config, get_weights_file_path
 from tqdm import tqdm
+import json
 
 def get_model(config, vocab_src_len, vocab_tgt_len):
     model = build_tranformer(vocab_src_len, vocab_tgt_len, config['seq_len'], config['seq_len'], config['d_model'])
     return model
 
+def save_tokenizers(tokenizer_src, tokenizer_tgt, config):
+    # Save tokenizers to artifacts directory as JSON files
+    with open(config['tokenizer_src_path'], 'w') as f_src:
+        json.dump(tokenizer_src.get_vocab(), f_src)
+    with open(config['tokenizer_tgt_path'], 'w') as f_tgt:
+        json.dump(tokenizer_tgt.get_vocab(), f_tgt)
+
 def train_model(config):
     device = "cuda" if torch.cuda.is_available() else "cpu"
     print(f'Using device {device}')
 
+    # Ensure directories for model weights and other artifacts exist
     Path(config['model_folder']).mkdir(parents=True, exist_ok=True)
 
+    # Get data, tokenizers, and dataloaders
     train_dataloader, val_dataloader, tokenizer_src, tokenizer_tgt = get_ds(config)
     model = get_model(config, tokenizer_src.get_vocab_size(), tokenizer_tgt.get_vocab_size()).to(device)
+
+    # Save tokenizers in the `artifacts` folder
+    save_tokenizers(tokenizer_src, tokenizer_tgt, config)
 
     writer = SummaryWriter(config['experiment_name'])
     optimizer = torch.optim.Adam(model.parameters(), lr=config['lr'], eps=1e-9)
@@ -65,5 +78,11 @@ def train_model(config):
 
         run_validation(model, val_dataloader, tokenizer_src, tokenizer_tgt, config['seq_len'], device, lambda msg: batch_iterator.write(msg), global_step, writer)
 
+        # Save model weights after each epoch in `artifacts/weights/`
         model_filename = get_weights_file_path(config, f"{epoch:02d}")
-        torch.save({'epoch': epoch, 'model_state_dict': model.state_dict(), 'optimizer_state_dict': optimizer.state_dict(), 'global_step': global_step}, model_filename)
+        torch.save({
+            'epoch': epoch,
+            'model_state_dict': model.state_dict(),
+            'optimizer_state_dict': optimizer.state_dict(),
+            'global_step': global_step
+        }, model_filename)

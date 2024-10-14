@@ -1,0 +1,7 @@
+# model.yaml
+seq_len: 350
+d_model: 512
+lang_src: "English"  # Source language (English)
+lang_tgt: "Yoruba"  # Target language (Yoruba)
+model_basename: "tmodel_"
+tokenizer_file: "tokenizer_{0}.json"
