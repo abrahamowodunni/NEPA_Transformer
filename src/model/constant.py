@@ -95,3 +95,58 @@ class LayerNormalization(nn.Module):
         mean = x.mean(dim = -1, keepdim = True)
         std = x.std(dim = -1, keepdim = True)
         return self.alpha * (x-mean) / (std + self.eps) + self.bias
+    
+class FeedForwardBlock(nn.Module):
+    """
+    Implements a two-layer feedforward neural network with ReLU activation and dropout, typically used after the attention layer in a transformer.
+
+    Args:
+        d_model (int): The input and output dimensionality (model size).
+        d_ff (int): The dimensionality of the feedforward layer (hidden size).
+        dropout (float): The dropout rate applied after the ReLU activation.
+
+    Forward Input:
+        x (Tensor): Input tensor of shape (batch_size, seq_len, d_model).
+
+    Forward Output:
+        Tensor: Transformed tensor of shape (batch_size, seq_len, d_model).
+    
+    Functionality:
+        - First transforms input from (d_model) to (d_ff).
+        - Applies ReLU for non-linearity.
+        - Applies dropout for regularization.
+        - Finally transforms back to (d_model).
+    """
+    def __init__(self, d_model, d_ff, dropout):
+        super().__init__()
+        self.linear1 = nn.Linear(d_model, d_ff) # Linear transformation W1 with bias b1
+        self.dropout = nn.Dropout(dropout) # Dropout for regularization
+        self.linear2 = nn.Linear(d_ff, d_model) # Linear transformation W2 with bias b2
+
+    def forward(self, x):
+        # (batch, sq_len, d_model) --> (batch, sq_len, d_ff) --> (batch, sq_len, d_model)
+        return self.linear2(self.dropout(torch.relu(self.linear1(x))))
+    
+class ResidualConnection(nn.Module): # the skip connection!
+    """
+    Implements a residual connection with layer normalization and dropout.
+
+    Args:
+        dropout (float): Dropout probability to regularize the sublayer output.
+
+    Methods:
+        forward(x, sublayer):
+            Applies layer normalization to the input 'x', passes it through the 'sublayer',
+            applies dropout, and then adds the original input 'x' as a residual connection.
+
+    Returns:
+        Tensor: The output with a residual connection added to the transformed input.
+    """
+    def __init__(self, dropout):
+
+        super().__init__()
+        self.dropout = nn.Dropout(dropout)
+        self.norm = LayerNormalization()
+
+    def forward(self, x, sublayer):
+        return x + self.dropout(sublayer(self.norm(x)))
