@@ -1,3 +1,7 @@
+import torch
+import torch.nn as nn 
+import math
+
 class EncoderBlock(nn.Module):
     """
     Encoder block consisting of a self-attention mechanism and a feed-forward network with residual connections.
