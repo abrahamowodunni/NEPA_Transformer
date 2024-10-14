@@ -4,7 +4,7 @@ from torch.utils.tensorboard import SummaryWriter
 from pathlib import Path
 from src.training.utils import get_ds, get_model, run_validation
 from src.model.transformer import build_tranformer
-from src.config.config import get_config, get_weights_file_path
+from src.config import get_config, get_weights_file_path
 from tqdm import tqdm
 import json
 
@@ -13,7 +13,6 @@ def get_model(config, vocab_src_len, vocab_tgt_len):
     return model
 
 def save_tokenizers(tokenizer_src, tokenizer_tgt, config):
-    # Save tokenizers to artifacts directory as JSON files
     with open(config['tokenizer_src_path'], 'w') as f_src:
         json.dump(tokenizer_src.get_vocab(), f_src)
     with open(config['tokenizer_tgt_path'], 'w') as f_tgt:
@@ -23,14 +22,11 @@ def train_model(config):
     device = "cuda" if torch.cuda.is_available() else "cpu"
     print(f'Using device {device}')
 
-    # Ensure directories for model weights and other artifacts exist
     Path(config['model_folder']).mkdir(parents=True, exist_ok=True)
 
-    # Get data, tokenizers, and dataloaders
     train_dataloader, val_dataloader, tokenizer_src, tokenizer_tgt = get_ds(config)
     model = get_model(config, tokenizer_src.get_vocab_size(), tokenizer_tgt.get_vocab_size()).to(device)
 
-    # Save tokenizers in the `artifacts` folder
     save_tokenizers(tokenizer_src, tokenizer_tgt, config)
 
     writer = SummaryWriter(config['experiment_name'])
@@ -48,9 +44,13 @@ def train_model(config):
 
     loss_fn = nn.CrossEntropyLoss(ignore_index=tokenizer_src.token_to_id('[PAD]'), label_smoothing=0.1).to(device)
 
+    validation_interval = config['validation_interval']
+
     for epoch in range(initial_epoch, config['num_epochs']):
         model.train()
         batch_iterator = tqdm(train_dataloader, desc=f"Processing Epoch {epoch:02d}")
+        steps_in_epoch = 0  # Step counter for the current epoch
+
         for batch in batch_iterator:
             encoder_input = batch['encoder_input'].to(device)
             decoder_input = batch['decoder_input'].to(device)
@@ -72,13 +72,24 @@ def train_model(config):
             optimizer.step()
             optimizer.zero_grad(set_to_none=True)
 
-            run_validation(model, val_dataloader, tokenizer_src, tokenizer_tgt, config['seq_len'], device, lambda msg: batch_iterator.write(msg), global_step, writer)
-
             global_step += 1
+            steps_in_epoch += 1
 
-        run_validation(model, val_dataloader, tokenizer_src, tokenizer_tgt, config['seq_len'], device, lambda msg: batch_iterator.write(msg), global_step, writer)
+            # Run validation after every `validation_interval` steps
+            if steps_in_epoch % validation_interval == 0:
+                run_validation(
+                    model, val_dataloader, tokenizer_src, tokenizer_tgt, 
+                    config['seq_len'], device, 
+                    lambda msg: batch_iterator.write(msg), global_step, writer
+                )
 
-        # Save model weights after each epoch in `artifacts/weights/`
+        # Run validation at the end of the epoch as well
+        run_validation(
+            model, val_dataloader, tokenizer_src, tokenizer_tgt, 
+            config['seq_len'], device, 
+            lambda msg: batch_iterator.write(msg), global_step, writer
+        )
+
         model_filename = get_weights_file_path(config, f"{epoch:02d}")
         torch.save({
             'epoch': epoch,
