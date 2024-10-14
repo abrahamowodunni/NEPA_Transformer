@@ -1,6 +1,8 @@
 import torch
 import torch.nn as nn 
 import math
+from attention import MultiHeadAttentionBlock
+from constant import ResidualConnection, FeedForwardBlock, LayerNormalization
 
 class EncoderBlock(nn.Module):
     """
