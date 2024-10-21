@@ -64,8 +64,8 @@ Training a transformer model in a low-resource setting brought forth several cha
 
 Training loss was visualized during the experiment, showing early sharp drops, followed by erratic behavior before stabilizing with the implementation of learning rate adjustments.
 
-![Training Loss Graph](![image](https://github.com/user-attachments/assets/7232891f-15cf-47f5-99fc-9317eff30169)
-)
+(![image](https://github.com/user-attachments/assets/7232891f-15cf-47f5-99fc-9317eff30169)
+
 
 ## Evaluation
 
