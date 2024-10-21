@@ -64,7 +64,7 @@ Training a transformer model in a low-resource setting brought forth several cha
 
 Training loss was visualized during the experiment, showing early sharp drops, followed by erratic behavior before stabilizing with the implementation of learning rate adjustments.
 
-(![image](https://github.com/user-attachments/assets/7232891f-15cf-47f5-99fc-9317eff30169)
+![image](https://github.com/user-attachments/assets/7232891f-15cf-47f5-99fc-9317eff30169)
 
 
 ## Evaluation
@@ -79,7 +79,8 @@ The evaluation phase included both quantitative and qualitative methods:
 
 Cross-attention maps showed that the model learned strong alignments in simple, short sentences but struggled with complex, long-range dependencies.
 
-![Attention Map](path/to/attention_map.png)
+![image](https://github.com/user-attachments/assets/b7673607-799b-4545-a8d0-0d003a39ae23)
+
 
 ## Results
 
